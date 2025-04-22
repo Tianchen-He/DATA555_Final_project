@@ -1,0 +1,193 @@
+---
+title: "FAERS Aspirin Safety Dashboard"
+author: "Tianchen He"
+date: "2025-03-02"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+# Dashboard
+```{r, include=FALSE}
+# Load required libraries
+library(tidyverse)
+library(plotly)
+library(DT)
+
+# Load FAERS data
+# 2023 Data
+drug_2023_q1 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2023q1/ASCII/DRUG23Q1.txt",
+                           sep = "$", header = TRUE)
+drug_2023_q2 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2023q2/ASCII/DRUG23Q2.txt",
+                           sep = "$", header = TRUE)
+drug_2023_q3 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2023q3/ASCII/DRUG23Q3.txt",
+                           sep = "$", header = TRUE)
+drug_2023_q4 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2023q4/ASCII/DRUG23Q4.txt",
+                           sep = "$", header = TRUE)
+
+outc_2023_q1 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2023q1/ASCII/OUTC23Q1.txt",
+                           sep = "$", header = TRUE)
+outc_2023_q2 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2023q2/ASCII/OUTC23Q2.txt",
+                           sep = "$", header = TRUE)
+outc_2023_q3 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2023q3/ASCII/OUTC23Q3.txt",
+                           sep = "$", header = TRUE)
+outc_2023_q4 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2023q4/ASCII/OUTC23Q4.txt",
+                           sep = "$", header = TRUE)
+
+reac_2023_q1 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2023q1/ASCII/REAC23Q1.txt",
+                           sep = "$", header = TRUE)
+reac_2023_q2 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2023q2/ASCII/REAC23Q2.txt",
+                           sep = "$", header = TRUE)
+reac_2023_q3 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2023q3/ASCII/REAC23Q3.txt",
+                           sep = "$", header = TRUE)
+reac_2023_q4 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2023q4/ASCII/REAC23Q4.txt",
+                           sep = "$", header = TRUE)
+
+# 2024 Data
+drug_2024_q1 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2024q1/ASCII/DRUG24Q1.txt",
+                           sep = "$", header = TRUE)
+drug_2024_q2 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2024q2/ASCII/DRUG24Q2.txt",
+                           sep = "$", header = TRUE)
+drug_2024_q3 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2024q3/ASCII/DRUG24Q3.txt",
+                           sep = "$", header = TRUE)
+drug_2024_q4 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2024q4/ASCII/DRUG24Q4.txt",
+                           sep = "$", header = TRUE)
+
+outc_2024_q1 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2024q1/ASCII/OUTC24Q1.txt",
+                           sep = "$", header = TRUE)
+outc_2024_q2 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2024q2/ASCII/OUTC24Q2.txt",
+                           sep = "$", header = TRUE)
+outc_2024_q3 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2024q3/ASCII/OUTC24Q3.txt",
+                           sep = "$", header = TRUE)
+outc_2024_q4 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2024q4/ASCII/OUTC24Q4.txt",
+                           sep = "$", header = TRUE)
+
+reac_2024_q1 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2024q1/ASCII/REAC24Q1.txt",
+                           sep = "$", header = TRUE)
+reac_2024_q2 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2024q2/ASCII/REAC24Q2.txt",
+                           sep = "$", header = TRUE)
+reac_2024_q3 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2024q3/ASCII/REAC24Q3.txt",
+                           sep = "$", header = TRUE)
+reac_2024_q4 <- read.delim("/Users/catherine/Downloads/Emory/Capstone/Data/faers_ascii_2024q4/ASCII/REAC24Q4.txt",
+                           sep = "$", header = TRUE)
+
+# Combine Data for Each Dataset Type
+drug <- rbind(drug_2023_q1, drug_2023_q2, drug_2023_q3, drug_2023_q4,
+              drug_2024_q1, drug_2024_q2, drug_2024_q3, drug_2024_q4)
+
+outc <- rbind(outc_2023_q1, outc_2023_q2, outc_2023_q3, outc_2023_q4,
+              outc_2024_q1, outc_2024_q2, outc_2024_q3, outc_2024_q4)
+
+reac <- rbind(reac_2023_q1, reac_2023_q2, reac_2023_q3, reac_2023_q4,
+              reac_2024_q1, reac_2024_q2, reac_2024_q3, reac_2024_q4)
+```
+
+```{r, message=FALSE}
+drug_clean <- drug %>%
+  filter(str_detect(toupper(drugname), "^ASPIRIN$")) %>%
+  select(primaryid, drugname) %>%
+  rename(Drug = drugname)
+
+reac_clean <- reac %>%
+  filter(primaryid %in% drug_clean$primaryid) %>%
+  select(primaryid, pt) %>%
+  rename(Adverse_Event = pt)
+
+outc_clean <- outc %>%
+  filter(primaryid %in% drug_clean$primaryid) %>%
+  select(primaryid, outc_cod) %>%
+  rename(Serious_Outcome = outc_cod)
+
+# Merge datasets
+faers_data <- drug_clean %>%
+  inner_join(reac_clean, by = "primaryid", relationship = "many-to-many") %>%
+  left_join(outc_clean, by = "primaryid", relationship = "many-to-many")
+
+faers_data$Serious_Outcome <- recode(faers_data$Serious_Outcome,
+                                     "HO" = "Hospitalization",
+                                     "LT" = "Life Threatening",
+                                     "DE" = "Death",
+                                     "DS" = "Disability",
+                                     "RI" = "Required Intervention",
+                                     "OT" = "Other")
+
+# Remove missing values
+faers_clean <- faers_data %>%
+  drop_na(Drug, Adverse_Event)
+
+# Count occurrences for each drug-adverse event pair
+event_counts <- faers_clean %>%
+  group_by(Drug, Adverse_Event) %>%
+  summarise(Count = n(), .groups = 'drop') %>%
+  arrange(desc(Count))
+
+# Compute proportions of serious outcomes per drug
+serious_outcome_counts <- faers_clean %>%
+  group_by(Drug, Serious_Outcome) %>%
+  summarise(Count = n(), .groups = 'drop') %>%
+  pivot_wider(names_from = Serious_Outcome, values_from = Count, values_fill = 0)
+```
+
+Column {.tabset}
+----------------------------------------
+
+### Drug-Specific Adverse Event Analysis
+```{r widget1}
+selected_drug <- "ASPIRIN"
+
+top_events <- event_counts %>%
+  filter(Drug == selected_drug) %>%
+  slice_max(order_by = Count, n = 100)
+
+# Create an interactive DT table
+datatable(top_events, 
+          options = list(
+            pageLength = 10,
+            autoWidth = TRUE,
+            dom = 'Bfrtip',
+            buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
+          ),
+          extensions = 'Buttons')
+```
+
+> **Key Takeaways**:
+> The table displays the top 100 most frequently reported adverse events associated with Aspirin in the FAERS database. The most common side effects include conditions such as gastrointestinal bleeding, nausea, and dizziness, which are well-documented risks of Aspirin use. This visualization allows users to quickly identify potential safety concerns and assess the relative frequency of different adverse reactions, which is valuable for pharmacovigilance and post-market drug safety monitoring.
+
+### Serious Outcomes by Drug Class
+```{r widget2}
+# Count serious outcomes for Aspirin
+serious_outcome_counts <- faers_clean %>%
+  group_by(Serious_Outcome) %>%
+  summarise(Count = n(), .groups = 'drop') %>%
+  filter(!is.na(Serious_Outcome))
+
+# Create interactive stacked bar chart
+plot2 <- ggplot(serious_outcome_counts, aes(x = Serious_Outcome, y = Count, fill = Serious_Outcome)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(title = "Proportion of Serious Outcomes for Aspirin",
+       x = "Outcome Type",
+       y = "Number of Reports",
+       fill = "Outcome") +
+       theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Convert to interactive plotly chart with legend toggle & hover tooltips
+ggplotly(plot2, tooltip = c("x", "y", "fill"))
+```
+
+> **Key Takeaways**:
+> This chart illustrates the proportions of serious outcomes (e.g., hospitalization, life-threatening events, death) linked to Aspirin-related adverse events. A significant number of reports involve hospitalization, indicating that some adverse effects may require medical intervention. By allowing users to toggle specific outcomes, this visualization helps in understanding the severity of reported cases, aiding healthcare professionals and regulatory agencies in monitoring drug safety trends.
+
+### Dataset Description
+The dataset used in this dashboard is the FDA Adverse Event Reporting System (FAERS), a public database managed by the U.S. FDA.  
+It includes voluntary reports of adverse drug events from healthcare providers, manufacturers, and consumers.  
+This dashboard uses data from Q1 2023 to Q4 2024, extracted from ASCII files provided by the FDA.  
+Reports were filtered for those involving “ASPIRIN” as the suspect drug.  
+All adverse events are coded using standardized MedDRA terms.
+
+---
+
+### Real-World Impact
+This dashboard helps healthcare professionals, patients, and regulators assess the post-market safety of Aspirin.  
+It supports evidence-based decision-making by visualizing real-world adverse event reports.
