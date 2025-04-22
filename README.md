@@ -5,7 +5,7 @@
 This project uses publicly available data from the FDA Adverse Event Reporting System (FAERS) to analyze adverse drug reactions associated with Aspirin. The dashboard enables users to interactively explore the most common adverse events and the severity of outcomes.
 
 ## Dashboard
-[Click here to view the dashboard](YOUR_GITHUB_PAGES_LINK)
+[Click here to view the dashboard](https://github.com/Tianchen-He/DATA555_Final_project)
 
 ## Dataset
 - Source: [FAERS database](https://www.fda.gov/drugs/questions-and-answers-fdas-adverse-event-reporting-system-faers/fda-adverse-event-reporting-system-faers-public-dashboard)
